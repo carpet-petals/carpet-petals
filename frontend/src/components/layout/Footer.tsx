@@ -9,6 +9,7 @@ interface ContactData {
   address: string;
   instagramUrl: string;
   facebookUrl: string;
+  whatsapp?: string;
 }
 
 function SocialIcon({ url, label, children }: { url: string; label: string; children: React.ReactNode }) {

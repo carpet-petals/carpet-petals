@@ -258,7 +258,7 @@ export default function Contact() {
                 <div>
                   <label className="block text-xs uppercase tracking-widest text-text-muted mb-2">Attachments (Optional)</label>
                   <div className="flex flex-wrap gap-2 mb-2">
-                    {attachments.map((url, i) => (
+                    {attachments.map((_, i) => (
                       <div key={i} className="flex items-center gap-1.5 text-xs bg-accent-light text-accent px-3 py-1.5 border border-accent/20">
                         <span>File {i + 1}</span>
                         <button type="button" onClick={() => removeAttachment(i)} className="hover:text-red-500 transition-colors">

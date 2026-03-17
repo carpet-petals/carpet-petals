@@ -48,7 +48,7 @@ export default function CategoryPage() {
             )}
             {category?.subcategories?.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-4">
-                {category.subcategories.map((s) => (
+                {category?.subcategories?.map((s) => (
                   <span key={s._id} className="text-xs bg-accent-light text-accent px-3 py-1 tracking-wide">
                     {s.name}
                   </span>

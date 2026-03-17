@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import api from "../../services/api";
 import { getCategories } from "../../services/api";
 import type { Category } from "../../types";

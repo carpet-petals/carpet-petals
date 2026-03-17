@@ -8,29 +8,46 @@ dotenv.config();
 
 const app = express();
 
+
 const allowedOrigins = [
-  process.env.CLIENT_URL,
-  "http://localhost:5173"
+  process.env.CLIENT_URL,           
+  "http://localhost:5173",           
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
+    
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
+
+    return callback(null, false);
   },
-  credentials: true
+  credentials: true,
 }));
+
+// Handle preflight requests explicitly 
+app.options("*", cors());
+
+
+//   MIDDLEWARES
+
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-// Static uploads
+
+//   STATIC FILES
+
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Routes
+
+//   ROUTES
+
+
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/categories", require("./routes/categories"));
 app.use("/api/products", require("./routes/products"));
@@ -38,12 +55,18 @@ app.use("/api/content", require("./routes/content"));
 app.use("/api/contact", require("./routes/contact"));
 app.use("/api/upload", require("./routes/upload"));
 
-// Health check
+
+// HEALTH CHECK
+
+
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// Cloudinary test
+
+// CLOUDINARY TEST
+
+
 app.get("/api/cloudinary-test", async (req, res) => {
   try {
     const cloudinary = require("cloudinary").v2;
@@ -54,7 +77,10 @@ app.get("/api/cloudinary-test", async (req, res) => {
   }
 });
 
-// MongoDB connection + server start
+
+// DATABASE + SERVER START
+
+
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("MongoDB connected");

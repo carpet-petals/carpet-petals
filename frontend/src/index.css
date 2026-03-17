@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-text-primary font-body;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display text-text-primary;
+    line-height: 1.15;
+  }
+
+  img {
+    @apply block max-w-full;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  ::selection {
+    @apply bg-accent-light text-accent;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 bg-accent text-white 
+           px-6 py-3 text-sm font-medium tracking-wide
+           transition-colors duration-200 hover:bg-accent-hover
+           focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center gap-2 border border-accent text-accent 
+           px-6 py-3 text-sm font-medium tracking-wide
+           transition-colors duration-200 hover:bg-accent hover:text-white
+           focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
+  }
+
+  .section-padding {
+    @apply py-20 px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-max {
+    @apply max-w-7xl mx-auto;
+  }
+
+  .section-title {
+    @apply font-display text-section text-text-primary;
+  }
+
+  .section-subtitle {
+    @apply text-text-secondary text-base leading-relaxed mt-4 max-w-xl;
+  }
+
+  .card {
+    @apply bg-surface border border-border overflow-hidden
+           transition-shadow duration-300 hover:shadow-md;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

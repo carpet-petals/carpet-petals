@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Star, StarOff, Loader } from "lucide-react";
-import api, { getProducts, getCategories } from "../../services/api";
-import type { Product, Category } from "../../types";
+import api, { getProducts } from "../../services/api";
+import type { Product } from "../../types";
 
 function getCategoryName(category: Product["category"]): string {
   if (!category) return "";
@@ -10,19 +10,17 @@ function getCategoryName(category: Product["category"]): string {
 }
 
 export default function FeaturedAdmin() {
-  const [products, setProducts]     = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading]       = useState(true);
-  const [toggling, setToggling]     = useState<string | null>(null);
-  const [error, setError]           = useState("");
-  const [filter, setFilter]         = useState<"all" | "featured">("all");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [toggling, setToggling] = useState<string | null>(null);
+  const [error, setError]       = useState("");
+  const [filter, setFilter]     = useState<"all" | "featured">("all");
 
   async function load() {
     setError("");
     try {
-      const [pr, cr] = await Promise.all([getProducts(), getCategories()]);
+      const pr = await getProducts();
       setProducts(pr.data.data || []);
-      setCategories(cr.data.data || []);
     } catch {
       setError("Failed to load products. Please refresh.");
     } finally {
@@ -37,15 +35,15 @@ export default function FeaturedAdmin() {
     setError("");
     try {
       await api.put(`/products/${product._id}`, {
-        title: product.title,
-        category: typeof product.category === "object" ? product.category._id : product.category,
-        subcategory: product.subcategory || "",
+        title:       product.title,
+        category:    typeof product.category === "object" ? product.category._id : product.category,
+        subcategory: product.subcategory  || "",
         description: product.description || "",
-        material: product.material || "",
-        dimensions: product.dimensions || "",
-        images: product.images || [],
-        featured: !product.featured,
-        seo: product.seo || {},
+        material:    product.material    || "",
+        dimensions:  product.dimensions  || "",
+        images:      product.images      || [],
+        featured:    !product.featured,
+        seo:         product.seo         || {},
       });
       setProducts((prev) =>
         prev.map((p) => p._id === product._id ? { ...p, featured: !p.featured } : p)
@@ -57,10 +55,7 @@ export default function FeaturedAdmin() {
     }
   }
 
-  const displayed = filter === "featured"
-    ? products.filter((p) => p.featured)
-    : products;
-
+  const displayed     = filter === "featured" ? products.filter((p) => p.featured) : products;
   const featuredCount = products.filter((p) => p.featured).length;
 
   if (loading) {
@@ -76,7 +71,6 @@ export default function FeaturedAdmin() {
 
   return (
     <div className="p-8">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-display text-2xl font-semibold text-text-primary">Featured Products</h1>
@@ -84,8 +78,6 @@ export default function FeaturedAdmin() {
             {featuredCount} of {products.length} product{products.length !== 1 ? "s" : ""} featured · shown on homepage
           </p>
         </div>
-
-        {/* Filter toggle */}
         <div className="flex border border-border overflow-hidden">
           <button
             onClick={() => setFilter("all")}
@@ -102,7 +94,6 @@ export default function FeaturedAdmin() {
         </div>
       </div>
 
-      {/* Info banner */}
       <div className="bg-accent-light border border-accent/20 px-4 py-3 mb-6 flex items-start gap-3">
         <Star size={15} className="text-accent mt-0.5 shrink-0" />
         <p className="text-sm text-text-secondary">
@@ -117,30 +108,25 @@ export default function FeaturedAdmin() {
         </div>
       )}
 
-      {/* Empty state */}
       {displayed.length === 0 && (
         <div className="text-center py-16 border border-dashed border-border">
           <Star size={24} className="text-text-muted mx-auto mb-3" />
           <p className="text-text-muted text-sm">
             {filter === "featured"
-              ? "No featured products yet. Star a product below to feature it."
+              ? "No featured products yet. Star a product to feature it."
               : "No products found."}
           </p>
           {filter === "featured" && (
-            <button
-              onClick={() => setFilter("all")}
-              className="text-accent text-sm mt-2 hover:underline"
-            >
+            <button onClick={() => setFilter("all")} className="text-accent text-sm mt-2 hover:underline">
               View all products
             </button>
           )}
         </div>
       )}
 
-      {/* Product list */}
       <div className="space-y-3">
         {displayed.map((product) => {
-          const catName = getCategoryName(product.category);
+          const catName    = getCategoryName(product.category);
           const isToggling = toggling === product._id;
 
           return (
@@ -150,7 +136,6 @@ export default function FeaturedAdmin() {
                 product.featured ? "border-accent/40 bg-accent-light/20" : "border-border"
               }`}
             >
-              {/* Thumbnail */}
               {product.images?.[0] ? (
                 <img
                   src={product.images[0]}
@@ -164,7 +149,6 @@ export default function FeaturedAdmin() {
                 </div>
               )}
 
-              {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-medium text-text-primary truncate">{product.title}</p>
@@ -185,7 +169,6 @@ export default function FeaturedAdmin() {
                 )}
               </div>
 
-              {/* Toggle button */}
               <button
                 onClick={() => toggleFeatured(product)}
                 disabled={isToggling}

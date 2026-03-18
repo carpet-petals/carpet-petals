@@ -4,10 +4,32 @@ import { motion } from "framer-motion";
 import type { Product } from "../../types";
 
 interface Props {
-  products: Product[];
+  products: Product[] | null; // null = loading, [] = loaded but empty
 }
 
 export default function FeaturedProducts({ products }: Props) {
+  // Still loading — show skeletons so no blank gap
+  if (products === null) {
+    return (
+      <section className="section-padding bg-surface">
+        <div className="container-max">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+            <div className="space-y-3">
+              <div className="h-3 w-24 bg-background animate-pulse" />
+              <div className="h-7 w-48 bg-background animate-pulse" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="aspect-[3/4] bg-background animate-pulse border border-border" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Loaded but no featured products — render nothing
   if (products.length === 0) return null;
 
   return (
@@ -33,7 +55,7 @@ export default function FeaturedProducts({ products }: Props) {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
+              transition={{ duration: 0.5, delay: i * 0.08 }}
             >
               <Link to={`/product/${product._id}`} className="group block card">
                 <div className="aspect-[3/4] overflow-hidden bg-background">
@@ -42,9 +64,7 @@ export default function FeaturedProducts({ products }: Props) {
                       src={product.images[0]}
                       alt={product.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).style.display = "none";
-                      }}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">

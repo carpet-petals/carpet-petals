@@ -7,47 +7,38 @@ import WhyUsSection from "../components/home/WhyUsSection";
 import { getHeroContent, getAboutContent, getFeaturedProducts, getCategories } from "../services/api";
 import type { HeroContent, AboutContent, Product, Category } from "../types";
 
-interface HomeData {
-  hero:       HeroContent | null;
-  about:      AboutContent | null;
-  products:   Product[];
-  categories: Category[];
-}
-
 export default function Home() {
-  const [data, setData]       = useState<HomeData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [hero,       setHero]       = useState<HeroContent  | null>(null);
+  const [about,      setAbout]      = useState<AboutContent | null>(null);
+  const [products,   setProducts]   = useState<Product[]    | null>(null);
+  const [categories, setCategories] = useState<Category[]   | null>(null);
 
   useEffect(() => {
-    Promise.allSettled([
-      getHeroContent(),
-      getAboutContent(),
-      getFeaturedProducts(),
-      getCategories(),
-    ]).then(([hero, about, products, categories]) => {
-      setData({
-        hero:       hero.status       === "fulfilled" ? hero.value.data.data           : null,
-        about:      about.status      === "fulfilled" ? about.value.data.data          : null,
-        products:   products.status   === "fulfilled" ? products.value.data.data ?? [] : [],
-        categories: categories.status === "fulfilled" ? categories.value.data.data.slice(0, 3) : [],
-      });
-    }).finally(() => setLoading(false));
-  }, []);
+    // Fire all requests in parallel — each updates independently as it resolves.
+    // null = loading, [] / specific value = loaded (even if empty)
+    getHeroContent()
+      .then((r) => setHero(r.data.data))
+      .catch(() => setHero({} as HeroContent));
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="min-h-screen bg-[#1C1917] animate-pulse" />
-      </div>
-    );
-  }
+    getAboutContent()
+      .then((r) => setAbout(r.data.data))
+      .catch(() => setAbout({} as AboutContent));
+
+    getFeaturedProducts()
+      .then((r) => setProducts(r.data.data ?? []))
+      .catch(() => setProducts([]));
+
+    getCategories()
+      .then((r) => setCategories(r.data.data.slice(0, 3) ?? []))
+      .catch(() => setCategories([]));
+  }, []);
 
   return (
     <>
-      <HeroSection    data={data?.hero       ?? null} />
-      <AboutSection   data={data?.about      ?? null} />
-      <FeaturedProducts products={data?.products   ?? []} />
-      <CollectionsPreview categories={data?.categories ?? []} />
+      <HeroSection        data={hero} />
+      <AboutSection       data={about} />
+      <FeaturedProducts   products={products} />
+      <CollectionsPreview categories={categories} />
       <WhyUsSection />
     </>
   );

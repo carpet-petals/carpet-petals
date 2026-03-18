@@ -1,11 +1,24 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Phone, MessageCircle } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { getContactContent } from "../../services/api";
+import type { ContactContent } from "../../types";
 
 export default function ContactCTA() {
+  const [contact, setContact] = useState<ContactContent | null>(null);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-60px" });
+
+  useEffect(() => {
+    getContactContent()
+      .then((res) => setContact(res.data.data))
+      .catch(() => setContact(null));
+  }, []);
+
+  const whatsappNumber = contact?.whatsapp?.replace(/\D/g, "") ?? "";
+  const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}` : null;
 
   return (
     <section className="section-padding bg-background">
@@ -27,6 +40,7 @@ export default function ContactCTA() {
             We work directly with buyers, exporters, and interior designers.
             Reach out to discuss your requirements — no middlemen, no delays.
           </p>
+
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/contact"
@@ -35,15 +49,18 @@ export default function ContactCTA() {
               <Phone size={16} />
               Contact Us
             </Link>
-            <a
-              href="https://wa.me/91XXXXXXXXXX"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 border border-white/30 text-white px-8 py-3.5 text-sm font-medium w-full sm:w-auto hover:bg-white/10 transition-colors duration-200"
-            >
-              <MessageCircle size={16} />
-              WhatsApp
-            </a>
+
+            {whatsappUrl && (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 border border-white/30 text-white px-8 py-3.5 text-sm font-medium w-full sm:w-auto hover:bg-white/10 transition-colors duration-200"
+              >
+                <MessageCircle size={16} />
+                WhatsApp
+              </a>
+            )}
           </div>
         </motion.div>
       </div>

@@ -24,10 +24,6 @@
     @apply block max-w-full;
   }
 
-  * {
-    @apply border-border;
-  }
-
   ::selection {
     @apply bg-accent-light text-accent;
   }
@@ -65,7 +61,7 @@
   }
 
   .card {
-    @apply bg-surface border border-border overflow-hidden
+    @apply bg-surface border border-border overflow-hidden shadow-sm
            transition-shadow duration-300 hover:shadow-md;
   }
 }

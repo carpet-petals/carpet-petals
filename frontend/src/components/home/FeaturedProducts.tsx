@@ -1,15 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { motion, useInView } from "framer-motion";
+import { motion } from "framer-motion";
 import { getFeaturedProducts } from "../../services/api";
 import type { Product } from "../../types";
 
 export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-60px" });
 
   useEffect(() => {
     getFeaturedProducts()
@@ -28,7 +26,10 @@ export default function FeaturedProducts() {
             <p className="text-xs tracking-[0.25em] uppercase text-accent mb-3">Handpicked</p>
             <h2 className="section-title">Featured Pieces</h2>
           </div>
-          <Link to="/collections" className="flex items-center gap-2 text-sm text-accent font-medium hover:text-accent-hover transition-colors shrink-0">
+          <Link
+            to="/collections"
+            className="flex items-center gap-2 text-sm text-accent font-medium hover:text-accent-hover transition-colors shrink-0"
+          >
             View All <ArrowRight size={16} />
           </Link>
         </div>
@@ -42,12 +43,13 @@ export default function FeaturedProducts() {
         )}
 
         {!loading && products.length > 0 && (
-          <div ref={ref} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {products.map((product, i) => (
               <motion.div
                 key={product._id}
                 initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
               >
                 <Link to={`/product/${product._id}`} className="group block card">

@@ -36,7 +36,6 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 2, delayMs = 3000): 
     const isTimeout =
       axios.isAxiosError(err) &&
       (err.code === "ECONNABORTED" || err.message?.includes("timeout"));
-
     if (retries > 0 && isTimeout) {
       await new Promise((res) => setTimeout(res, delayMs));
       return withRetry(fn, retries - 1, delayMs);
@@ -84,8 +83,9 @@ export const submitContactForm = (data: ContactFormData) =>
 export const uploadImage = (file: File) => {
   const formData = new FormData();
   formData.append("image", file);
+
   return api.post<ApiResponse<{ url: string }>>("/upload", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
+    headers: { "Content-Type": undefined },
     timeout: 120000,
   });
 };

@@ -16,6 +16,7 @@ import Products from "./admin/pages/Products";
 import Categories from "./admin/pages/Categories";
 import Content from "./admin/pages/Content";
 import Enquiries from "./admin/pages/Enquiries";
+import FeaturedAdmin from "./admin/pages/FeaturedAdmin";
 
 export default function App() {
   return (
@@ -35,11 +36,12 @@ export default function App() {
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Navigate to="/admin/dashboard" replace />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="products" element={<Products />} />
+        <Route path="dashboard"  element={<Dashboard />} />
+        <Route path="products"   element={<Products />} />
         <Route path="categories" element={<Categories />} />
-        <Route path="content" element={<Content />} />
-        <Route path="enquiries" element={<Enquiries />} />
+        <Route path="featured"   element={<FeaturedAdmin />} />
+        <Route path="content"    element={<Content />} />
+        <Route path="enquiries"  element={<Enquiries />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

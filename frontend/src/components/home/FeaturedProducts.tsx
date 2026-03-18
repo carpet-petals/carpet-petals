@@ -7,8 +7,8 @@ import type { Product } from "../../types";
 
 export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [failed, setFailed] = useState(false);
+  const [loading, setLoading]   = useState(true);
+  const [failed, setFailed]     = useState(false);
 
   useEffect(() => {
     let cancelled = false;

@@ -1,30 +1,21 @@
-import { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
-import { getAboutContent } from "../../services/api";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import type { AboutContent } from "../../types";
 
-export default function AboutSection() {
-  const [about, setAbout] = useState<AboutContent | null>(null);
+interface Props {
+  data: AboutContent | null;
+}
+
+export default function AboutSection({ data }: Props) {
   const [imgError, setImgError] = useState(false);
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
 
-  useEffect(() => {
-    getAboutContent()
-      .then((res) => setAbout(res.data.data))
-      .catch(() => setAbout(null));
-  }, []);
+  if (!data) return null;
 
-
-  if (about === null) return null;
-
-  const image    = about.image;
-  const headline = about.headline;
-  const body     = about.body;
+  const { image, headline, body } = data;
 
   const facts = [
-    about.established && { value: about.established, label: "Established" },
-    about.location    && { value: about.location,    label: "Location" },
+    data.established && { value: data.established, label: "Established" },
+    data.location    && { value: data.location,    label: "Location" },
     { value: "100%",   label: "Handmade" },
     { value: "Export", label: "Ready" },
   ].filter(Boolean) as { value: string; label: string }[];
@@ -34,11 +25,10 @@ export default function AboutSection() {
       <div className="container-max">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-          {/* Image */}
           <motion.div
-            ref={ref}
             initial={{ opacity: 0, x: -24 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.7 }}
             className="relative"
           >
@@ -51,7 +41,6 @@ export default function AboutSection() {
                   onError={() => setImgError(true)}
                 />
               ) : (
-
                 <div className="w-full h-full bg-surface flex items-center justify-center">
                   <span className="text-xs text-text-muted tracking-widest uppercase">No image set</span>
                 </div>
@@ -60,17 +49,15 @@ export default function AboutSection() {
             <div className="absolute -bottom-4 -right-4 w-full h-full border border-accent/30 -z-10" />
           </motion.div>
 
-          {/* Text */}
           <motion.div
             initial={{ opacity: 0, x: 24 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.7, delay: 0.15 }}
           >
             <p className="text-xs tracking-[0.25em] uppercase text-accent mb-4">About Carpet Petals</p>
 
-            {headline && (
-              <h2 className="section-title mb-6">{headline}</h2>
-            )}
+            {headline && <h2 className="section-title mb-6">{headline}</h2>}
 
             {body && (
               <div className="space-y-4 text-text-secondary leading-relaxed">

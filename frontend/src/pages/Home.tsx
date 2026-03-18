@@ -1,38 +1,53 @@
-import { Suspense } from "react";
+import { useEffect, useState } from "react";
 import HeroSection from "../components/home/HeroSection";
 import AboutSection from "../components/home/AboutSection";
 import FeaturedProducts from "../components/home/FeaturedProducts";
 import CollectionsPreview from "../components/home/CollectionsPreview";
 import WhyUsSection from "../components/home/WhyUsSection";
+import { getHeroContent, getAboutContent, getFeaturedProducts, getCategories } from "../services/api";
+import type { HeroContent, AboutContent, Product, Category } from "../types";
 
-function AboutSkeleton() {
-  return (
-    <section className="section-padding bg-background">
-      <div className="container-max">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div className="aspect-[4/5] bg-surface animate-pulse" />
-          <div className="space-y-4">
-            <div className="h-3 bg-surface animate-pulse w-32" />
-            <div className="h-8 bg-surface animate-pulse w-3/4" />
-            <div className="h-4 bg-surface animate-pulse w-full" />
-            <div className="h-4 bg-surface animate-pulse w-5/6" />
-            <div className="h-4 bg-surface animate-pulse w-4/6" />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+interface HomeData {
+  hero:       HeroContent | null;
+  about:      AboutContent | null;
+  products:   Product[];
+  categories: Category[];
 }
 
 export default function Home() {
+  const [data, setData]       = useState<HomeData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.allSettled([
+      getHeroContent(),
+      getAboutContent(),
+      getFeaturedProducts(),
+      getCategories(),
+    ]).then(([hero, about, products, categories]) => {
+      setData({
+        hero:       hero.status       === "fulfilled" ? hero.value.data.data           : null,
+        about:      about.status      === "fulfilled" ? about.value.data.data          : null,
+        products:   products.status   === "fulfilled" ? products.value.data.data ?? [] : [],
+        categories: categories.status === "fulfilled" ? categories.value.data.data.slice(0, 3) : [],
+      });
+    }).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-[#1C1917] animate-pulse" />
+      </div>
+    );
+  }
+
   return (
     <>
-      <HeroSection />
-      <Suspense fallback={<AboutSkeleton />}>
-        <AboutSection />
-      </Suspense>
-      <FeaturedProducts />
-      <CollectionsPreview />
+      <HeroSection    data={data?.hero       ?? null} />
+      <AboutSection   data={data?.about      ?? null} />
+      <FeaturedProducts products={data?.products   ?? []} />
+      <CollectionsPreview categories={data?.categories ?? []} />
       <WhyUsSection />
     </>
   );

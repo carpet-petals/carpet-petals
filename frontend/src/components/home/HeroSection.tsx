@@ -1,30 +1,22 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { getHeroContent } from "../../services/api";
 import type { HeroContent } from "../../types";
 
-export default function HeroSection() {
-  const [hero, setHero] = useState<HeroContent | null>(null);
+interface Props {
+  data: HeroContent | null;
+}
+
+export default function HeroSection({ data }: Props) {
   const [imgError, setImgError] = useState(false);
 
-  useEffect(() => {
-    getHeroContent()
-      .then((res) => setHero(res.data.data))
-      .catch(() => setHero(null));
-  }, []);
-
-  const bgImage = hero?.backgroundImage;
-  const tagline = hero?.tagline ?? "";
-  const subtext = hero?.subtext ?? "";
-
-
-  if (hero === null) return null;
+  const bgImage = data?.backgroundImage;
+  const tagline = data?.tagline ?? "";
+  const subtext = data?.subtext ?? "";
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background */}
       <div className="absolute inset-0 z-0">
         {bgImage && !imgError ? (
           <img
@@ -34,7 +26,6 @@ export default function HeroSection() {
             onError={() => setImgError(true)}
           />
         ) : (
-         
           <div className="w-full h-full bg-[#1C1917]" />
         )}
         <div className="absolute inset-0 bg-[#1C1917]/60" />
@@ -57,7 +48,6 @@ export default function HeroSection() {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="font-display font-semibold text-hero text-white mb-6 text-balance"
           >
-
             {tagline}
           </motion.h1>
         )}
@@ -79,10 +69,7 @@ export default function HeroSection() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Link
-            to="/collections"
-            className="btn-primary text-sm px-8 py-3.5 w-full sm:w-auto justify-center"
-          >
+          <Link to="/collections" className="btn-primary text-sm px-8 py-3.5 w-full sm:w-auto justify-center">
             View Collection
             <ArrowRight size={16} />
           </Link>

@@ -4,9 +4,11 @@ import type {
   PaymentContent, ContactContent, ContactFormData, ApiResponse,
 } from "../types";
 
+const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000/api";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
-  timeout: 10000,
+  baseURL: BASE_URL,
+  timeout: 15000,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -16,9 +18,23 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("admin_token");
+      window.location.href = "/admin/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const getProducts = (categorySlug?: string, subcategory?: string) =>
   api.get<ApiResponse<Product[]>>("/products", {
-    params: { ...(categorySlug && { category: categorySlug }), ...(subcategory && { subcategory }) },
+    params: {
+      ...(categorySlug && { category: categorySlug }),
+      ...(subcategory && { subcategory }),
+    },
   });
 
 export const getProductById = (id: string) =>
@@ -50,6 +66,7 @@ export const uploadImage = (file: File) => {
   formData.append("image", file);
   return api.post<ApiResponse<{ url: string }>>("/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" },
+    timeout: 120000,
   });
 };
 

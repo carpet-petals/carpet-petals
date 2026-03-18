@@ -4,13 +4,18 @@ import { motion } from "framer-motion";
 import type { Category } from "../../types";
 
 interface Props {
-  categories: Category[] | null; // null = loading, [] = loaded but empty
+  categories: Category[] | null; // null = loading  |  [] = loaded but empty
 }
 
 export default function CollectionsPreview({ categories }: Props) {
+  // Loaded but empty → render nothing (no orphan heading)
+  if (categories !== null && categories.length === 0) return null;
+
   return (
-    <section className="section-padding bg-surface" id="collections">
+    // bg-background — alternates from FeaturedProducts (bg-surface)
+    <section className="section-padding bg-background" id="collections">
       <div className="container-max">
+
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
           <div>
             <p className="text-xs tracking-[0.25em] uppercase text-accent mb-3">Our Collections</p>
@@ -24,17 +29,17 @@ export default function CollectionsPreview({ categories }: Props) {
           </Link>
         </div>
 
-        {/* Skeleton while loading */}
+        {/* Skeleton */}
         {categories === null && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="aspect-[4/3] bg-background border border-border animate-pulse" />
+              <div key={n} className="aspect-[4/3] bg-surface border border-border animate-pulse" />
             ))}
           </div>
         )}
 
         {/* Loaded */}
-        {categories !== null && categories.length > 0 && (
+        {categories !== null && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {categories.map((cat, i) => (
               <motion.div
@@ -42,7 +47,7 @@ export default function CollectionsPreview({ categories }: Props) {
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.5, delay: i * 0.12 }}
+                transition={{ duration: 0.55, delay: i * 0.1, ease: "easeOut" }}
               >
                 <Link to={`/collections/${cat.slug}`} className="group block card">
                   <div className="aspect-[4/3] overflow-hidden bg-surface">
@@ -51,7 +56,11 @@ export default function CollectionsPreview({ categories }: Props) {
                         src={cat.coverImage}
                         alt={cat.name}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-surface">
@@ -80,6 +89,7 @@ export default function CollectionsPreview({ categories }: Props) {
             ))}
           </div>
         )}
+
       </div>
     </section>
   );

@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Phone, MessageCircle } from "lucide-react";
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { motion } from "framer-motion";
 import { getContactContent } from "../../services/api";
 import type { ContactContent } from "../../types";
 
+// ─── Replace with your real WhatsApp number (digits only, with country code) ──
+const WHATSAPP_FALLBACK = "919XXXXXXXXX";
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function ContactCTA() {
   const [contact, setContact] = useState<ContactContent | null>(null);
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-60px" });
 
   useEffect(() => {
     getContactContent()
@@ -17,17 +18,20 @@ export default function ContactCTA() {
       .catch(() => setContact(null));
   }, []);
 
-  const whatsappNumber = contact?.whatsapp?.replace(/\D/g, "") ?? "";
-  const whatsappUrl = whatsappNumber ? `https://wa.me/${whatsappNumber}` : null;
+  // Use API value once loaded, fall back to constant while loading or on error.
+  // Button is ALWAYS visible — never waits for API.
+  const whatsappNumber = contact?.whatsapp?.replace(/\D/g, "") || WHATSAPP_FALLBACK;
+  const whatsappUrl    = `https://wa.me/${whatsappNumber}`;
 
   return (
+    // bg-background — alternates from WhyUsSection (bg-surface)
     <section className="section-padding bg-background">
       <div className="container-max">
         <motion.div
-          ref={ref}
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.65, ease: "easeOut" }}
           className="bg-admin-dark text-white px-8 py-16 md:py-20 text-center max-w-3xl mx-auto"
         >
           <p className="text-xs tracking-[0.3em] uppercase text-white/40 mb-4">
@@ -50,17 +54,15 @@ export default function ContactCTA() {
               Contact Us
             </Link>
 
-            {whatsappUrl && (
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 border border-white/30 text-white px-8 py-3.5 text-sm font-medium w-full sm:w-auto hover:bg-white/10 transition-colors duration-200"
-              >
-                <MessageCircle size={16} />
-                WhatsApp
-              </a>
-            )}
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 border border-white/30 text-white px-8 py-3.5 text-sm font-medium w-full sm:w-auto hover:bg-white/10 transition-colors duration-200"
+            >
+              <MessageCircle size={16} />
+              WhatsApp
+            </a>
           </div>
         </motion.div>
       </div>

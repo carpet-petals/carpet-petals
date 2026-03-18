@@ -4,26 +4,17 @@ import AboutSection from "../components/home/AboutSection";
 import FeaturedProducts from "../components/home/FeaturedProducts";
 import CollectionsPreview from "../components/home/CollectionsPreview";
 import WhyUsSection from "../components/home/WhyUsSection";
-import { getHeroContent, getAboutContent, getFeaturedProducts, getCategories } from "../services/api";
-import type { HeroContent, AboutContent, Product, Category } from "../types";
+import ContactCTA from "../components/home/ContactCTA";
+import { getFeaturedProducts, getCategories } from "../services/api";
+import type { Product, Category } from "../types";
 
 export default function Home() {
-  const [hero,       setHero]       = useState<HeroContent  | null>(null);
-  const [about,      setAbout]      = useState<AboutContent | null>(null);
-  const [products,   setProducts]   = useState<Product[]    | null>(null);
-  const [categories, setCategories] = useState<Category[]   | null>(null);
+  const [products,   setProducts]   = useState<Product[]  | null>(null);
+  const [categories, setCategories] = useState<Category[] | null>(null);
 
   useEffect(() => {
-    // Fire all requests in parallel — each updates independently as it resolves.
-    // null = loading, [] / specific value = loaded (even if empty)
-    getHeroContent()
-      .then((r) => setHero(r.data.data))
-      .catch(() => setHero({} as HeroContent));
-
-    getAboutContent()
-      .then((r) => setAbout(r.data.data))
-      .catch(() => setAbout({} as AboutContent));
-
+    // Hero + About are hardcoded — zero API wait, instant render above the fold.
+    // Only truly dynamic data (inventory) is fetched here.
     getFeaturedProducts()
       .then((r) => setProducts(r.data.data ?? []))
       .catch(() => setProducts([]));
@@ -35,11 +26,12 @@ export default function Home() {
 
   return (
     <>
-      <HeroSection        data={hero} />
-      <AboutSection       data={about} />
+      <HeroSection />
+      <AboutSection />
       <FeaturedProducts   products={products} />
       <CollectionsPreview categories={categories} />
       <WhyUsSection />
+      <ContactCTA />
     </>
   );
 }

@@ -3,38 +3,32 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import api from "../../services/api";
 import ImageUploader from "../components/ImageUploader";
 
-type Section = "hero" | "about" | "payment" | "contact" | "aboutus" | "faq";
+// Hero and About sections are hardcoded in the frontend components.
+// Only operational/dynamic content is managed here.
+type Section = "payment" | "contact" | "aboutus" | "faq";
 
 const LABELS: Record<string, string> = {
-  backgroundImage: "Hero Background Image",
-  tagline: "Tagline",
-  subtext: "Subtext",
-  image: "About Section Image",
-  headline: "Headline",
-  body: "Body Text",
-  upi: "UPI ID",
-  upiQrImage: "UPI QR Code Image",
-  bankName: "Bank Name",
-  accountName: "Account Name",
-  accountNumber: "Account Number",
-  ifsc: "IFSC Code",
-  phone: "Phone",
-  whatsapp: "WhatsApp Number",
-  email: "Email",
-  address: "Address",
-  mapEmbedUrl: "Google Maps Embed URL",
+  upi:          "UPI ID",
+  upiQrImage:   "UPI QR Code Image",
+  bankName:     "Bank Name",
+  accountName:  "Account Name",
+  accountNumber:"Account Number",
+  ifsc:         "IFSC Code",
+  phone:        "Phone",
+  whatsapp:     "WhatsApp Number",
+  email:        "Email",
+  address:      "Address",
+  mapEmbedUrl:  "Google Maps Embed URL",
   instagramUrl: "Instagram URL",
-  facebookUrl: "Facebook URL",
-  title: "Title",
-  content: "Content",
+  facebookUrl:  "Facebook URL",
+  title:        "Title",
+  content:      "Content",
 };
 
-const IMAGE_KEYS = ["backgroundImage", "image", "upiQrImage"];
-const TEXTAREA_KEYS = ["subtext", "body", "address", "mapEmbedUrl", "content"];
+const IMAGE_KEYS    = ["upiQrImage"];
+const TEXTAREA_KEYS = ["address", "mapEmbedUrl", "content"];
 
 const SECTION_KEYS: Record<Section, string[]> = {
-  hero:    ["backgroundImage", "tagline", "subtext"],
-  about:   ["image", "headline", "body"],
   payment: ["upi", "upiQrImage", "bankName", "accountName", "accountNumber", "ifsc"],
   contact: ["phone", "whatsapp", "email", "address", "mapEmbedUrl", "instagramUrl", "facebookUrl"],
   aboutus: ["title", "content"],
@@ -42,25 +36,23 @@ const SECTION_KEYS: Record<Section, string[]> = {
 };
 
 const TABS: { key: Section; label: string }[] = [
-  { key: "hero",    label: "Hero" },
-  { key: "about",   label: "About Section" },
   { key: "payment", label: "Payment" },
   { key: "contact", label: "Contact" },
-  { key: "aboutus", label: "About Us (Footer)" },
+  { key: "aboutus", label: "About Us Page" },
   { key: "faq",     label: "FAQ" },
 ];
 
 export default function Content() {
-  const [section, setSection]   = useState<Section>("hero");
-  const [data, setData]         = useState<Record<string, any>>({});
+  const [section,   setSection  ] = useState<Section>("payment");
+  const [data,      setData     ] = useState<Record<string, any>>({});
   const [savedData, setSavedData] = useState<Record<string, any>>({});
-  const [editing, setEditing]   = useState(false);
-  const [saving, setSaving]     = useState(false);
-  const [saved, setSaved]       = useState(false);
-  const [loading, setLoading]   = useState(true);
+  const [editing,   setEditing  ] = useState(false);
+  const [saving,    setSaving   ] = useState(false);
+  const [saved,     setSaved    ] = useState(false);
+  const [loading,   setLoading  ] = useState(true);
   const [saveError, setSaveError] = useState("");
 
-  // ── Load section ──────────────────────────────────────────────────────────
+  // ── Load ──────────────────────────────────────────────────────────────────
   const loadSection = useCallback(async (s: Section) => {
     setLoading(true);
     setEditing(false);
@@ -69,7 +61,7 @@ export default function Content() {
     try {
       const res = await api.get(`/content/${s}`);
       setData(res.data.data);
-      setSavedData(res.data.data); // snapshot for cancel
+      setSavedData(res.data.data);
     } catch {
       setData({});
       setSavedData({});
@@ -80,14 +72,11 @@ export default function Content() {
 
   useEffect(() => { loadSection(section); }, [section, loadSection]);
 
-  // ── Unsaved-changes guard on tab switch ───────────────────────────────────
+  // ── Tab switch with unsaved-changes guard ─────────────────────────────────
   function switchSection(next: Section) {
     if (next === section) return;
     if (editing) {
-      const confirmed = window.confirm(
-        "You have unsaved changes. Discard and switch tab?"
-      );
-      if (!confirmed) return;
+      if (!window.confirm("You have unsaved changes. Discard and switch tab?")) return;
     }
     setSection(next);
   }
@@ -103,27 +92,22 @@ export default function Content() {
       setEditing(false);
       setTimeout(() => setSaved(false), 3000);
     } catch (err: unknown) {
-      let message = "Error saving. Please try again.";
-      if (err && typeof err === "object") {
-        const axiosMsg = (err as { response?: { data?: { message?: string } } })
-          ?.response?.data?.message;
-        message = axiosMsg || message;
-      }
-      
-      setSaveError(message);
+      const axiosMsg = (err as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message;
+      setSaveError(axiosMsg || "Error saving. Please try again.");
     } finally {
       setSaving(false);
     }
   }
 
-  // ── Cancel — restore last saved snapshot ─────────────────────────────────
+  // ── Cancel ────────────────────────────────────────────────────────────────
   function cancel() {
     setData(savedData);
     setEditing(false);
     setSaveError("");
   }
 
-  // ── Field change helper ───────────────────────────────────────────────────
+  // ── Field helpers ─────────────────────────────────────────────────────────
   function f(key: string) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setData((p) => ({ ...p, [key]: e.target.value }));
@@ -133,7 +117,6 @@ export default function Content() {
   function addFaq() {
     setData((p) => ({ ...p, items: [...(p.items || []), { question: "", answer: "" }] }));
   }
-
   function updateFaq(index: number, field: "question" | "answer", value: string) {
     setData((p) => ({
       ...p,
@@ -142,7 +125,6 @@ export default function Content() {
       ),
     }));
   }
-
   function removeFaq(index: number) {
     setData((p) => ({
       ...p,
@@ -158,9 +140,8 @@ export default function Content() {
           {(data.items || []).length === 0 && (
             <p className="text-sm text-text-muted italic">No FAQs added yet.</p>
           )}
-
           {(data.items || []).map((item: any, i: number) => (
-            <div key={`faq-view-${i}-${item.question}`} className="border border-border p-4">
+            <div key={`faq-view-${i}`} className="border border-border p-4">
               <p className="text-sm font-medium text-text-primary mb-1">{item.question}</p>
               <p className="text-sm text-text-secondary">{item.answer}</p>
             </div>
@@ -169,13 +150,14 @@ export default function Content() {
       );
     }
 
-    const keys = section === "aboutus" ? ["title", "content"] : SECTION_KEYS[section];
-
+    const keys = SECTION_KEYS[section];
     return (
       <div className="space-y-5">
         {keys.map((key) => (
           <div key={key} className="border-b border-border pb-4 last:border-0 last:pb-0">
-            <p className="text-xs uppercase tracking-widest text-text-muted mb-1">{LABELS[key] || key}</p>
+            <p className="text-xs uppercase tracking-widest text-text-muted mb-1">
+              {LABELS[key] || key}
+            </p>
             {IMAGE_KEYS.includes(key) ? (
               data[key]
                 ? <img src={data[key]} alt={key} className="w-32 h-32 object-cover border border-border" />
@@ -208,18 +190,14 @@ export default function Content() {
           </div>
           {(data.items || []).length === 0 && (
             <p className="text-sm text-text-muted italic text-center py-4">
-              No FAQs yet. Click Add Question.
+              No FAQs yet. Click "Add Question" to start.
             </p>
           )}
           {(data.items || []).map((item: any, i: number) => (
-            <div
-              key={`faq-edit-${i}-${item.question}`}
-              className="border border-border p-4 space-y-3 relative"
-            >
+            <div key={`faq-edit-${i}`} className="border border-border p-4 space-y-3 relative">
               <button
                 type="button"
                 onClick={() => removeFaq(i)}
-                aria-label={`Remove FAQ ${i + 1}`}
                 className="absolute top-3 right-3 p-1 text-text-muted hover:text-red-500 transition-colors"
               >
                 <Trash2 size={14} />
@@ -231,7 +209,7 @@ export default function Content() {
                 <input
                   value={item.question}
                   onChange={(e) => updateFaq(i, "question", e.target.value)}
-                  className="w-full bg-background border border-border px-4 py-2.5 text-sm focus:outline-none focus:border-accent"
+                  className="w-full bg-background border border-border px-4 py-2.5 text-sm focus:outline-none focus:border-accent transition-colors"
                 />
               </div>
               <div>
@@ -242,7 +220,7 @@ export default function Content() {
                   value={item.answer}
                   onChange={(e) => updateFaq(i, "answer", e.target.value)}
                   rows={3}
-                  className="w-full bg-background border border-border px-4 py-2.5 text-sm focus:outline-none focus:border-accent resize-none"
+                  className="w-full bg-background border border-border px-4 py-2.5 text-sm focus:outline-none focus:border-accent resize-none transition-colors"
                 />
               </div>
             </div>
@@ -251,8 +229,7 @@ export default function Content() {
       );
     }
 
-    const keys = section === "aboutus" ? ["title", "content"] : SECTION_KEYS[section];
-
+    const keys = SECTION_KEYS[section];
     return (
       <div className="space-y-5">
         {keys.map((key) => (
@@ -271,14 +248,14 @@ export default function Content() {
               <textarea
                 value={data[key] || ""}
                 onChange={f(key)}
-                rows={key === "body" || key === "content" ? 6 : 3}
-                className="w-full bg-background border border-border px-4 py-2.5 text-sm focus:outline-none focus:border-accent resize-none"
+                rows={key === "content" ? 6 : 3}
+                className="w-full bg-background border border-border px-4 py-2.5 text-sm focus:outline-none focus:border-accent resize-none transition-colors"
               />
             ) : (
               <input
                 value={data[key] || ""}
                 onChange={f(key)}
-                className="w-full bg-background border border-border px-4 py-2.5 text-sm focus:outline-none focus:border-accent"
+                className="w-full bg-background border border-border px-4 py-2.5 text-sm focus:outline-none focus:border-accent transition-colors"
               />
             )}
           </div>
@@ -287,13 +264,19 @@ export default function Content() {
     );
   }
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="p-8">
-      <h1 className="font-display text-2xl font-semibold text-text-primary mb-8">
-        Content Management
-      </h1>
+      <div className="mb-8">
+        <h1 className="font-display text-2xl font-semibold text-text-primary">
+          Content Management
+        </h1>
+        <p className="text-sm text-text-muted mt-1">
+          Hero and About section content is hardcoded in the codebase — update requires a redeploy.
+        </p>
+      </div>
 
-      {/* Tabs — use switchSection to guard unsaved changes */}
+      {/* Tabs */}
       <div className="flex flex-wrap gap-1 mb-8 border-b border-border">
         {TABS.map((t) => (
           <button
@@ -310,6 +293,7 @@ export default function Content() {
         ))}
       </div>
 
+      {/* Body */}
       {loading ? (
         <div className="space-y-3 max-w-2xl">
           {[1, 2, 3].map((n) => (
@@ -344,13 +328,11 @@ export default function Content() {
                 Editing: {TABS.find((t) => t.key === section)?.label}
               </h2>
               {renderEditMode()}
-
               {saveError && (
                 <div className="mt-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2.5" role="alert">
                   {saveError}
                 </div>
               )}
-
               <div className="flex items-center gap-4 pt-6 border-t border-border mt-6">
                 <button
                   onClick={save}
@@ -362,7 +344,7 @@ export default function Content() {
                 <button
                   onClick={cancel}
                   disabled={saving}
-                  className="text-sm text-text-secondary hover:text-text-primary px-4 disabled:opacity-60"
+                  className="text-sm text-text-secondary hover:text-text-primary px-4 disabled:opacity-60 transition-colors"
                 >
                   Cancel
                 </button>

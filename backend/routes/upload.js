@@ -6,20 +6,11 @@ const auth = require("../middleware/auth");
 
 const router = express.Router();
 
-// ─── Admin image upload (products, categories, content) ───────────────────────
 const imageStorage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => ({
     folder: "carpet-petals",
-    // Do NOT restrict dimensions — preserve full HD resolution
-    // Cloudinary will serve optimised versions via fetch_format auto
     allowed_formats: ["jpg", "jpeg", "png", "webp", "tiff", "bmp"],
-    transformation: [
-      // Auto format (webp for browsers that support it) + auto quality
-      // This keeps visual quality high while reducing file size on delivery
-      { fetch_format: "auto", quality: "auto:best" },
-    ],
-    // Use original filename slugified as public_id for readability
     use_filename: true,
     unique_filename: true,
     overwrite: false,
@@ -46,7 +37,7 @@ const imageUpload = multer({
   storage: imageStorage,
   fileFilter: imageFilter,
   limits: {
-    fileSize: 80 * 1024 * 1024, // 80MB — covers RAW exports and HD TIFFs
+    fileSize: 80 * 1024 * 1024,
   },
 });
 
@@ -70,7 +61,6 @@ router.post("/", auth, (req, res) => {
   });
 });
 
-// ─── Public attachment upload (contact form — images + PDFs) ─────────────────
 const attachmentStorage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
@@ -79,9 +69,6 @@ const attachmentStorage = new CloudinaryStorage({
       folder: "carpet-petals/attachments",
       allowed_formats: ["jpg", "jpeg", "png", "webp", "pdf"],
       resource_type: isPdf ? "raw" : "image",
-      ...(!isPdf && {
-        transformation: [{ fetch_format: "auto", quality: "auto:best" }],
-      }),
       use_filename: true,
       unique_filename: true,
     };
@@ -107,7 +94,7 @@ const attachmentUpload = multer({
   storage: attachmentStorage,
   fileFilter: attachmentFilter,
   limits: {
-    fileSize: 30 * 1024 * 1024, // 30MB for attachments
+    fileSize: 30 * 1024 * 1024,
   },
 });
 

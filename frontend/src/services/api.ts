@@ -8,7 +8,7 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000/api";
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 15000,
+  timeout: 30000,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -29,34 +29,54 @@ api.interceptors.response.use(
   }
 );
 
+async function withRetry<T>(fn: () => Promise<T>, retries = 2, delayMs = 3000): Promise<T> {
+  try {
+    return await fn();
+  } catch (err: unknown) {
+    const isTimeout =
+      axios.isAxiosError(err) &&
+      (err.code === "ECONNABORTED" || err.message?.includes("timeout"));
+
+    if (retries > 0 && isTimeout) {
+      await new Promise((res) => setTimeout(res, delayMs));
+      return withRetry(fn, retries - 1, delayMs);
+    }
+    throw err;
+  }
+}
+
 export const getProducts = (categorySlug?: string, subcategory?: string) =>
-  api.get<ApiResponse<Product[]>>("/products", {
-    params: {
-      ...(categorySlug && { category: categorySlug }),
-      ...(subcategory && { subcategory }),
-    },
-  });
+  withRetry(() =>
+    api.get<ApiResponse<Product[]>>("/products", {
+      params: {
+        ...(categorySlug && { category: categorySlug }),
+        ...(subcategory && { subcategory }),
+      },
+    })
+  );
 
 export const getProductById = (id: string) =>
-  api.get<ApiResponse<Product>>(`/products/${id}`);
+  withRetry(() => api.get<ApiResponse<Product>>(`/products/${id}`));
 
 export const getFeaturedProducts = () =>
-  api.get<ApiResponse<Product[]>>("/products", { params: { featured: true } });
+  withRetry(() =>
+    api.get<ApiResponse<Product[]>>("/products", { params: { featured: true } })
+  );
 
 export const getCategories = () =>
-  api.get<ApiResponse<Category[]>>("/categories");
+  withRetry(() => api.get<ApiResponse<Category[]>>("/categories"));
 
 export const getHeroContent = () =>
-  api.get<ApiResponse<HeroContent>>("/content/hero");
+  withRetry(() => api.get<ApiResponse<HeroContent>>("/content/hero"));
 
 export const getAboutContent = () =>
-  api.get<ApiResponse<AboutContent>>("/content/about");
+  withRetry(() => api.get<ApiResponse<AboutContent>>("/content/about"));
 
 export const getPaymentContent = () =>
-  api.get<ApiResponse<PaymentContent>>("/content/payment");
+  withRetry(() => api.get<ApiResponse<PaymentContent>>("/content/payment"));
 
 export const getContactContent = () =>
-  api.get<ApiResponse<ContactContent>>("/content/contact");
+  withRetry(() => api.get<ApiResponse<ContactContent>>("/content/contact"));
 
 export const submitContactForm = (data: ContactFormData) =>
   api.post<ApiResponse<null>>("/contact", data);

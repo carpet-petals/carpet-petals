@@ -8,14 +8,26 @@ import type { Product } from "../../types";
 export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     getFeaturedProducts()
-      .then((res) => setProducts(res.data.data))
-      .catch(() => setProducts([]))
-      .finally(() => setLoading(false));
+      .then((res) => {
+        if (!cancelled) setProducts(res.data.data ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
   }, []);
 
+  if (failed) return null;
   if (!loading && products.length === 0) return null;
 
   return (
@@ -59,6 +71,9 @@ export default function FeaturedProducts() {
                         src={product.images[0]}
                         alt={product.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
